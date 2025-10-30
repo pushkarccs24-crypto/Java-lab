@@ -1,0 +1,124 @@
+import java.util.*;
+
+class Bank {
+    final String name = "XYZ_Bank";
+}
+
+// Base Account class
+class Account {
+    String name;
+    String accNo;
+    String accType;
+    double balance;
+    boolean chequeFacility;
+
+    Account(String name, String accNo, String accType, boolean chequeFacility) {
+        this.name = name;
+        this.accNo = accNo;
+        this.accType = accType;
+        this.chequeFacility = chequeFacility;
+        this.balance = 0.0;
+    }
+
+    // Deposit money
+    void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+            System.out.println("Deposited: " + amount);
+        } else {
+            System.out.println("Invalid deposit amount.");
+        }
+    }
+
+    // Display balance
+    void displayBalance() {
+        System.out.println("Account Holder: " + name);
+        System.out.println("Account No: " + accNo);
+        System.out.println("Account Type: " + accType);
+        System.out.println("Balance: " + balance);
+        System.out.println("Cheque Facility: " + chequeFacility);
+    }
+
+    // Withdraw money (to be overridden if needed)
+    void withdraw(double amount) {
+        if (amount <= balance) {
+            balance -= amount;
+            System.out.println("Withdrawn: " + amount);
+        } else {
+            System.out.println("Insufficient balance.");
+        }
+    }
+}
+
+// Current Account
+class CurAcct extends Account {
+    double minBalance;
+    double penalty;
+
+    CurAcct(String name, String accNo, double minBalance, double penalty) {
+        super(name, accNo, "Current", true);
+        this.minBalance = minBalance;
+        this.penalty = penalty;
+    }
+
+    @Override
+    void withdraw(double amount) {
+        if (amount <= balance) {
+            balance -= amount;
+            System.out.println("Withdrawn: " + amount);
+            checkMinimumBalance();
+        } else {
+            System.out.println("Insufficient balance.");
+        }
+    }
+
+    void checkMinimumBalance() {
+        if (balance < minBalance) {
+            balance -= penalty;
+            System.out.println("Balance below minimum. Penalty imposed: " + penalty);
+        }
+    }
+}
+
+// Savings Account
+class SavAcct extends Account {
+    double rate; // annual interest rate
+
+    SavAcct(String name, String accNo, double rate) {
+        super(name, accNo, "Savings", false);
+        this.rate = rate;
+    }
+
+    // Compute and deposit compound interest
+    void computeInterest(int years) {
+        double amount = balance * Math.pow((1 + rate / 100), years);
+        double interest = amount - balance;
+        balance += interest;
+        System.out.println("Interest of " + interest + " added for " + years + " years.");
+    }
+}
+
+// Test class
+public class Test {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // Create a Savings Account
+        SavAcct sa = new SavAcct("Alice", "S123", 5.0);
+        sa.deposit(10000);
+        sa.computeInterest(2);
+        sa.withdraw(2000);
+        sa.displayBalance();
+
+        System.out.println("\n----------------------\n");
+
+        // Create a Current Account
+        CurAcct ca = new CurAcct("Bob", "C456", 5000, 500);
+        ca.deposit(8000);
+        ca.withdraw(4000);
+        ca.withdraw(3000); // this will trigger penalty if below min balance
+        ca.displayBalance();
+
+        sc.close();
+    }
+}
